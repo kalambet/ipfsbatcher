@@ -5,16 +5,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/google/uuid"
-
-	"github.com/ipfs/interface-go-ipfs-core/options"
-
 	"github.com/filecoin-project/go-commp-utils/writer"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	ipfsfiles "github.com/ipfs/go-ipfs-files"
 	httpapi "github.com/ipfs/go-ipfs-http-client"
 	ipfsIO "github.com/ipfs/go-unixfs/io"
+	"github.com/ipfs/interface-go-ipfs-core/options"
 	"github.com/ipld/go-car"
 	"github.com/multiformats/go-multiaddr"
 )
@@ -49,6 +47,11 @@ func CreateBatch(ctx context.Context, i *httpapi.HttpApi, cids []cid.Cid) (cid.C
 	if err != nil {
 		return cid.Undef, err
 	}
+
+	err = i.Dag().Pinning().Add(ctx, node)
+	if err != nil {
+		return cid.Undef, err
+	}
 	return node.Cid(), nil
 }
 
@@ -73,10 +76,10 @@ func ClientDealPieceCID(ctx context.Context, i *httpapi.HttpApi, root cid.Cid) (
 
 func UploadAndPin(ctx context.Context, i *httpapi.HttpApi, pth string) (cid.Cid, error) {
 	file, err := os.Open(pth)
-	defer file.Close()
 	if err != nil {
 		return cid.Undef, err
 	}
+	defer file.Close()
 
 	resp, err := i.Unixfs().Add(ctx, ipfsfiles.NewReaderFile(file), options.Unixfs.Pin(true))
 	if err != nil {
