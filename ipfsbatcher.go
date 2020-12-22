@@ -34,7 +34,7 @@ func Do() error {
 	}
 
 	dataPath := path.Join(pwd, "data")
-	err = os.Mkdir(path.Join(pwd, dataPath), 0755)
+	err = os.Mkdir(dataPath, 0755)
 	if err != nil && !os.IsExist(err) {
 		return err
 	}
